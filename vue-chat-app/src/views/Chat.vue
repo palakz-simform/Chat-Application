@@ -10,7 +10,6 @@
         </header>
         <div class="d-flex  user-chat flex-column align-center">
             <div class="user-chat-content mt-7 rounded-lg">
-
             </div>
             <div class="d-flex justify-center serach">
                 <form autocomplete="off" class="d-flex mt-2 rounded-lg">
