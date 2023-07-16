@@ -23,9 +23,12 @@ const handleResize = () => {
   router.isReady().then(() => {
     let route = router.currentRoute.value.fullPath
     if (screenWidth.value <= 980 && (route === '/login' || route === '/register')) {
-      console.log(screenWidth.value, route)
       let element = document.getElementById('view-wrapper') as HTMLElement
       element.style.flexDirection = "column";
+    }
+    if (screenWidth.value > 980 && (route === '/login' || route === '/register')) {
+      let element = document.getElementById('view-wrapper') as HTMLElement
+      element.style.flexDirection = "row";
     }
 
   })

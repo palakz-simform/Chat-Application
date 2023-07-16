@@ -14,8 +14,8 @@
 
 .img-wrapper {
     background-color: #361d32;
-    height: 80%;
-    width: 80%;
+    height: 95%;
+    width: 95%;
     border-top-left-radius: 25px;
     border-bottom-left-radius: 25px;
 }

@@ -2,6 +2,7 @@
     <div class="d-flex justify-start align-center lr-outer">
         <div class="d-flex align-center lr-wrapper">
             <div class="lr-form">
+                <h2 class="text-center mb-2">Login Form</h2>
                 <v-card class="mx-auto px-6 py-8 login-form rounded-xl">
                     <v-form v-model="form" @submit.prevent="onSubmit">
                         <v-text-field v-model="email" :rules="[rules.required, rules.email]" label="E-mail" clearable
@@ -16,40 +17,40 @@
                             variant="elevated" class="login-form-btn">
                             Sign In
                         </v-btn>
+                        <p class="text-center pt-4">Don't an account? <RouterLink :to="{ name: 'Register' }">Register
+                            </RouterLink>
+                            here.
+                        </p>
                     </v-form>
                 </v-card>
             </div>
         </div>
     </div>
 </template>
-<script>
-export default {
-    data: () => ({
-        form: false,
-        password: '',
-        loading: false,
-        email: '',
-        rules: {
-            required: value => !!value || 'Field is required.',
-            counter: value => value.length <= 20 || 'Max 20 characters',
-            min: v => v.length >= 8 || 'Use 8 or more characters',
-            email: value => {
-                const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                return pattern.test(value) || 'Invalid e-mail.'
-            },
-        }
-    }),
+<script setup>
+import { ref } from 'vue'
+const form = ref(false)
+const password = ref('')
+const loading = ref(false)
+const email = ref('')
 
-    methods: {
-        onSubmit() {
-            if (!this.form) return
-            console.log("here")
-        },
-        required(v) {
-            return !!v || 'Field is required'
-        },
+const rules = {
+    required: value => !!value || 'Field is required.',
+    counter: value => value.length <= 20 || 'Max 20 characters',
+    min: v => v.length >= 8 || 'Use 8 or more characters',
+    email: value => {
+        const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        return pattern.test(value) || 'Invalid e-mail.'
     },
 }
+
+
+function onSubmit() {
+    if (!form.value) return
+    loading.value = true
+    setTimeout(() => (loading.value = false), 2000)
+};
+
 
 </script>
 <style scoped>
@@ -60,8 +61,8 @@ export default {
 
 .lr-wrapper {
     background-color: #361d32;
-    height: 80%;
-    width: 80%;
+    height: 95%;
+    width: 95%;
     border-top-right-radius: 25px;
     border-bottom-right-radius: 25px;
     margin: -1px;
@@ -74,6 +75,10 @@ export default {
 }
 
 .login-form-btn {
+    color: #f1e8e6;
+}
+
+.lr-form h2 {
     color: #f1e8e6;
 }
 

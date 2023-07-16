@@ -3,6 +3,7 @@
 	margin: 0;
 	padding: 0;
 	scroll-behavior: smooth;
+	font-family: Verdana;
 }
 body {
 	background-color: #f1e8e6 !important;

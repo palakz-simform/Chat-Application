@@ -5,9 +5,9 @@
                 <v-card class="mx-auto px-6 py-8 login-form rounded-xl">
                     <v-form v-model="form" @submit.prevent="onSubmit">
                         <v-text-field v-model="firstName" label="First name" class="input-field"
-                            :rules="firstNameRules"></v-text-field>
-                        <v-text-field v-model="lastName" label="Last name" class="input-field"
-                            :rules="[rules.required]"></v-text-field>
+                            :rules="[rules.required, rules.firstNameRules]" clearable></v-text-field>
+                        <v-text-field v-model="lastName" label="Last name" class="input-field" :rules="[rules.required]"
+                            clearable></v-text-field>
                         <v-text-field v-model="email" :rules="[rules.required, rules.email]" label="E-mail" clearable
                             class="input-field"></v-text-field>
                         <v-text-field v-model="password" :readonly="loading" :rules="[rules.required, rules.min]"
@@ -20,48 +20,41 @@
                             variant="elevated" class="login-form-btn">
                             Register
                         </v-btn>
+                        <p class="text-center pt-4">Have an account? <RouterLink :to="{ name: 'Login' }">Login
+                            </RouterLink>
+                            here.
+                        </p>
                     </v-form>
                 </v-card>
             </div>
         </div>
     </div>
 </template>
-<script>
-export default {
-    data: () => ({
-        form: false,
-        password: '',
-        loading: false,
-        email: '',
-        rules: {
-            required: value => !!value || 'Field is required.',
-            counter: value => value.length <= 20 || 'Max 20 characters',
-            min: v => v.length >= 8 || 'Use 8 or more characters',
-            email: value => {
-                const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                return pattern.test(value) || 'Invalid e-mail.'
-            },
-        },
-        firstName: '',
-        firstNameRules: [
-            value => {
-                if (value?.length > 3) return true
+<script setup>
+import { ref } from 'vue'
+const form = ref(false)
+const password = ref('')
+const loading = ref(false)
+const email = ref('')
 
-                return 'First name must be at least 4 characters.'
-            },
-        ],
-        lastName: '',
-    }),
-
-    methods: {
-        onSubmit() {
-            if (!this.form) return
-            console.log("here")
-        },
-        required(v) {
-            return !!v || 'Field is required'
-        },
+const rules = {
+    required: value => !!value || 'Field is required.',
+    counter: value => value.length <= 20 || 'Max 20 characters',
+    min: v => v.length >= 8 || 'Minimum 8 characters required',
+    email: value => {
+        const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        return pattern.test(value) || 'Invalid e-mail.'
     },
+    firstNameRules: value => {
+        if (value?.length > 3) return true
+        return 'Minimum 4 characters required.'
+    },
+};
+const firstName = ref('')
+
+const lastName = ref('');
+function onSubmit() {
+    if (!form.value) return
 }
 
 </script>
@@ -73,8 +66,8 @@ export default {
 
 .lr-wrapper {
     background-color: #361d32;
-    height: 80%;
-    width: 80%;
+    height: 95%;
+    width: 95%;
     border-top-right-radius: 25px;
     border-bottom-right-radius: 25px;
     margin: -1px;
