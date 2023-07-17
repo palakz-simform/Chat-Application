@@ -29,6 +29,10 @@
 </template>
 <script setup>
 import { ref } from 'vue'
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const auth = getAuth();
 const form = ref(false)
 const password = ref('')
 const loading = ref(false)
@@ -48,7 +52,21 @@ const rules = {
 function onSubmit() {
     if (!form.value) return
     loading.value = true
-    setTimeout(() => (loading.value = false), 2000)
+    signInWithEmailAndPassword(auth, email.value, password.value)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log("Successfull")
+            console.log(user)
+            localStorage.setItem('isLoggedIn', true)
+            router.push('/')
+        })
+        .catch((error) => {
+            console.log('Failed')
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage)
+        });
+    loading.value = false
 };
 
 

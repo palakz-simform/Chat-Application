@@ -1,22 +1,30 @@
 import "./assets/main.css";
-import { createApp } from 'vue'
+import { createApp,type App  } from 'vue'
 import { createPinia } from 'pinia'
 
-import App from './App.vue'
+import ChatApp from './App.vue'
 import router from './router'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css';
+import { auth } from "./includes/firebase";
 
 const vuetify = createVuetify({
   components,
   directives,
 })
-const app = createApp(App)
+let app: App<Element>;
 
-app.use(createPinia())
-app.use(router)
-app.use(vuetify)
-app.mount('#app')
+auth.onAuthStateChanged(() => {
+	if (!app) {
+		app =  createApp(ChatApp);
+    app.use(createPinia())
+    app.use(router)
+    app.use(vuetify)
+    app.mount('#app')
+	}
+});
+
+

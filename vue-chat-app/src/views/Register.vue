@@ -30,8 +30,15 @@
         </div>
     </div>
 </template>
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from 'vue-router'
+import type user from "../types/user"
+import { doc, setDoc } from "firebase/firestore";
+import { db, auth } from '../includes/firebase'
+
+const router = useRouter()
 const form = ref(false)
 const password = ref('')
 const loading = ref(false)
@@ -55,8 +62,46 @@ const firstName = ref('')
 const lastName = ref('');
 function onSubmit() {
     if (!form.value) return
-}
+    loading.value = true
+    const auth = getAuth();
+    console.log(email.value, password.value)
+    createUserWithEmailAndPassword(auth, email.value, password.value)
+        .then((userCredential) => {
+            const user = userCredential.user;
 
+            let userData: user = {
+                uid: user.uid,
+                fname: firstName.value,
+                lname: lastName.value,
+                email: email.value,
+                password: password.value,
+                chats: []
+            }
+            console.log(user.uid)
+            addDataToFirebase(userData)
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage)
+        });
+    loading.value = false
+}
+async function addDataToFirebase(userData: object) {
+    try {
+        await setDoc(doc(db, "users", userData.uid), {
+            userData
+        });
+        localStorage.setItem('isLoggedIn', 'true')
+        router.push("/")
+        console.log(auth)
+    }
+    catch (err) {
+        console.log(err)
+    }
+
+
+}
 </script>
 <style scoped>
 .lr-outer {
