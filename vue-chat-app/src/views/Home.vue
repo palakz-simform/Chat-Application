@@ -3,38 +3,83 @@
     <header>
       <div class="chat-header d-flex align-center ps-6">
         <div class="profile-initials rounded-circle d-flex align-center justify-center">
-          <h4 class="user-initials">PZ</h4>
+          <h4 class="user-initials">{{ userInitials(userStore.userDetails.fname + " " + userStore.userDetails.lname) }}
+          </h4>
         </div>
-        <div class="ps-4 text-h6 font-weight-bold user-name">Palak Zalavadia</div>
+        <div class="ps-4 text-h6 font-weight-bold user-name">{{ userStore.userDetails.fname }}
+          {{ userStore.userDetails.lname }}</div>
       </div>
     </header>
     <div class="user-list d-flex justify-center flex-column ">
-      <div class="d-flex justify-center search">
-        <form autocomplete="off" class="d-flex mt-2 rounded-lg">
-          <v-icon color="#361d32" class="pt-3 ps-4 me-5 ">mdi-magnify</v-icon>
-          <input type="email" id="email" class="ps-3" placeholder="Enter name to search...">
-        </form>
-      </div>
-      <div class="d-flex justify-center align-center">
-        <div class="list-of-user  mt-5 rounded-lg">
-          <div v-for="user in userList" :key="user">
-            <div class="user  d-flex align-center justify-start">
+      <v-card-text class="mt-4 search-bar">
+        <v-text-field :loading="loading" density="compact" variant="solo" label="Search here"
+          append-inner-icon="mdi-magnify" single-line hide-details @click:append-inner="onClick"></v-text-field>
+      </v-card-text>
+      <div class="d-flex justify-center align-center user-list-section">
+        <div class="list-of-user  mt-5 mb-9 rounded-lg">
+          <div v-for="user in userData" :key="user.uid">
+            <div class="user  d-flex align-center justify-start" @click="setChatId(user.uid)">
               <div class="profile-initials rounded-circle d-flex align-center justify-center ms-4">
-                <h4 class="user-initials">PZ</h4>
+                <h4 class="user-initials">{{ userInitials(user.fname + " " +
+                  user.lname) }}</h4>
               </div>
-              <div class="ps-4 user-name-">{{ user }}</div>
-
+              <div class="ps-4 user-name">{{ user.fname }} {{ user.lname }}</div>
             </div>
             <hr />
           </div>
-
         </div>
       </div>
     </div>
   </div>
 </template>
-<script setup>
-const userList = ['Ankan Zalavadia', 'Brich Dharsandiya', 'Mansi Dharsandiya', 'Yash Dharsandiya', 'Purab Bhuva', 'Meera Patel', 'Yasha Dadhaniya', 'Umang Dadhaniya']
+
+<script setup lang ='ts'>
+import { ref, onBeforeMount } from 'vue'
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from '../includes/firebase'
+import { useFormattedName } from "../composables/useFormattedName";
+import type user from '../types/user'
+import { useUserStore } from '../stores/userStore'
+
+const userStore = useUserStore()
+const loaded = ref(false)
+const loading = ref(false)
+onBeforeMount(async () => {
+  await userStore.getUserDetails()
+  getUserData()
+})
+const { userInitials } = useFormattedName();
+const userData = ref<user[]>([]);
+const fullName = ref<string[]>([])
+
+function getUserData() {
+  onSnapshot(
+    collection(db, "users"),
+    (querySnapshot) => {
+      userData.value = [] as user[];
+      querySnapshot.forEach((doc) => {
+        userData.value.push(doc.data() as user);
+        let name: string = doc.data().fname + ' ' + doc.data().lname
+        fullName.value.push(name)
+      });
+    }
+  );
+}
+
+function onClick() {
+  loading.value = true
+
+  setTimeout(() => {
+    loading.value = false
+    loaded.value = true
+  }, 2000)
+}
+
+function setChatId(uid: string) {
+  localStorage.setItem("chatId", uid)
+  userStore.getUserChat(localStorage.getItem("chatId"))
+}
+
 </script>
 <style scoped>
 .people-list-wrapper {
@@ -46,7 +91,6 @@ const userList = ['Ankan Zalavadia', 'Brich Dharsandiya', 'Mansi Dharsandiya', '
   background-color: #361d32;
   color: #f1e8e6;
   height: 60px;
-  border-right: 1px solid #f1e8e6;
 }
 
 .profile-initials {
@@ -56,36 +100,17 @@ const userList = ['Ankan Zalavadia', 'Brich Dharsandiya', 'Mansi Dharsandiya', '
   width: 40px;
 }
 
-.user-list {
-  border-right: 1px solid #361d32;
-  height: 90.5vh
-}
-
-input {
-  color: #361d32;
-  height: 35px;
-  width: 100%;
-}
-
-form {
-  background-color: white;
-  width: 90%;
-}
 
 .list-of-user {
   background-color: white;
   height: 75vh;
-  width: 90%;
+  width: 92.5%;
   overflow-y: auto;
 }
 
 .user {
   height: 60px;
   cursor: pointer;
-}
-
-i {
-  color: #361d32;
 }
 
 @media screen and (max-width: 780px) {
@@ -112,13 +137,11 @@ i {
   .user-name {
     font-size: 12px !important;
   }
-}
-
-@media screen and (max-width: 480px) {
 
   header {
     width: 100%;
     position: fixed !important;
+    z-index: 1;
   }
 
   .people-list-wrapper {
@@ -129,7 +152,8 @@ i {
 
   .user-list {
     height: 110vh;
-    margin-top: 10px;
+    margin: 50px 8vw 0px 8vw;
+    z-index: 2;
   }
 
   .chat-header {
@@ -143,6 +167,32 @@ i {
   .user {
     height: 40px;
     font-size: 14px;
+  }
+
+  .search-bar {
+    padding: 0px !important;
+  }
+
+  .user-list-section {
+    margin-top: -500px !important;
+    position: relative;
+    top: -100px !important;
+  }
+
+  .list-of-user {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 415px) {
+  .user-list-section {
+    top: -180px !important;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .user-list-section {
+    top: -150px !important;
   }
 }
 </style>

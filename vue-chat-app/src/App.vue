@@ -42,7 +42,7 @@ onBeforeMount(() => {
 </script>
 
 <style scoped>
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 580px) {
   .user-list-chats {
     flex-direction: column;
   }

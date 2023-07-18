@@ -90,7 +90,7 @@ function onSubmit() {
 async function addDataToFirebase(userData: object) {
     try {
         await setDoc(doc(db, "users", userData.uid), {
-            userData
+            ...userData
         });
         localStorage.setItem('isLoggedIn', 'true')
         router.push("/")
