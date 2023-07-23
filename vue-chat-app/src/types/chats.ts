@@ -1,5 +1,5 @@
 export default interface chats{
     content:string,
-    date:string,
+    date:date,
     uid:string,
 }

@@ -6,27 +6,29 @@
                     <h4 class="user-initials">{{ userInitials(userStore.chatDetails.fname + ' ' +
                         userStore.chatDetails.lname) }}</h4>
                 </div>
-                <div class="ps-4 text-h6 font-weight-bold user-name">{{ userStore.chatDetails.fname }} {{
-                    userStore.chatDetails.lname }}</div>
+                <div class="ps-4 text-h6 font-weight-bold user-name">{{ userStore.chatList.uid }} {{
+                    userStore.chatDetails.fname
+                }} {{
+    userStore.chatDetails.lname }}</div>
             </div>
         </header>
-        <div class="d-flex user-chat flex-column align-center">
-            <div class="user-chat-content mt-10 rounded-lg pb-16 ps-5 pe-5">
-                <div class="mt-4 mx-8 chats-comman " v-for="(chat, index) in userChat" :key="chat">
-                    <div v-if="index % 2 == 0" class="d-flex  justify-end align-end">
-                        <div class=" ms-16 pe-5 ps-5 py-2 chat-block-sender rounded-lg">{{ chat }} Hii</div>
+        <div class="d-flex user-chat flex-column align-center" ref="chatWindow">
+            <div class="user-chat-content mt-10 rounded-lg pb-16 ps-5 pe-5" ref="chatContentRef">
+                <div class="mt-4 mx-8 chats-comman " v-for="chat in userStore.chatList" :key="userStore.chatList.uid">
+                    <div v-if="chat.uid == auth.currentUser.uid" class="d-flex  justify-end align-end">
+                        <div class=" ms-16 pe-5 ps-5 py-2 chat-block-sender rounded-lg">{{ chat.content }}</div>
                         <div class="send-icon"></div>
                     </div>
                     <div v-else class="d-flex">
                         <div class="receive-icon"></div>
                         <div class="me-16 ps-5 pe-5 chat-block-receiver rounded-lg py-2">
-                            {{ chat }}
+                            {{ chat.content }}
                         </div>
                     </div>
                 </div>
             </div>
             <div class="d-flex justify-center align-center message rounded-lg">
-                <v-text-field class="px-5" v-model="message" :append-icon="message ? 'mdi-send' : 'mdi-close-circle'"
+                <v-text-field class="px-5" v-model="message" :append-icon="message ? 'mdi-send' : ''"
                     clear-icon="mdi-close-circle" clearable label="Message" type="text" @click:append="sendMessage"
                     @click:clear="clearMessage"></v-text-field>
             </div>
@@ -34,20 +36,58 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue'
+import { ref, onBeforeMount, watchEffect, nextTick } from 'vue'
 import { useUserStore } from '../stores/userStore'
 import { useFormattedName } from '../composables/useFormattedName';
+import { auth, db } from '../includes/firebase';
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import type chats from '../types/chats'
 
 const { userInitials } = useFormattedName();
-const userChat = ref(['aaaaaaaa as a a a a a aaaaaaaaaaaaa', 'sad sfdz dsa asd sadds fdsf sdg fdg fd h dghdf ffds fds fds f dsf ds fs dfds f sdf sdf sd f sdf sdfds f  asd as dsa das d sa dsa d', 'dsadsa sdad sad sad sad sa d sad saf sdf dfg dfg fd g dsad asd sad sad as d sa dsa d as d asd dsa d sa', 'dsadcszxc', 'sadsadasdasdas', 'aSsaSAsaSaSAsA DFFS DF SDF SD F FSEF SD FW ERW FES', 'DSA D ASD ASD SD fses fsdzhbf ueya nh', 'sad das ds fgsgvkiod jiog nogihfo jghopjn i,o k,opfi oi ', 'dasv ffgfdhgfhgffg fgfd f pk op kioklkpo p iokpl kop k[po', 'dsa d asd as d asd as fsdf dsf dsf  dsfds f dsfdsf dsf fsddf  sfdfsd ', 'pppp p p ppppppp p p'])
+const chatContentRef = ref(null);
+const chatWindow = ref(null);
+
 const userStore = useUserStore()
-onBeforeMount(() => {
-    userStore.getUserChat(localStorage.getItem("chatId"))
+onBeforeMount(async () => {
+    await userStore.getUserChat(localStorage.getItem("chatId"))
+    nextTick(() => {
+        scrollToBottom(chatContentRef.value);
+    });
 })
+function scrollToBottom(element) {
+    if (element) {
+        console.log("here")
+        element.scrollTop = element.scrollHeight;
+    }
+}
 
 const message = ref('')
-function sendMessage() {
+let chatsReceiver: chats[]
+
+
+async function sendMessage() {
+    chatsReceiver = []
+    if (userStore.chatDetails.chats) {
+        chatsReceiver = userStore.chatDetails.chats;
+    }
+
+    const newChat: chats = {
+        content: message.value,
+        date: new Date(),
+        uid: auth.currentUser!.uid
+    };
+
     clearMessage()
+    chatsReceiver.push(newChat)
+    console.log(chatsReceiver)
+    const userRef: DocumentReference<DocumentData> = doc(db, "users", localStorage.getItem('chatId'));
+    await updateDoc(userRef, {
+        chats: chatsReceiver
+    })
+    nextTick(() => {
+        scrollToBottom(chatContentRef.value);
+    });
+
 }
 function clearMessage() {
     message.value = ''
@@ -123,7 +163,7 @@ function clearMessage() {
     margin-right: -6px;
 }
 
-@media screen and (max-width: 780px) {
+@media screen and (max-width: 1320px) {
     .user-name {
         font-size: 16px !important;
     }

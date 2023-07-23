@@ -2,12 +2,39 @@
   <div class="people-list-wrapper">
     <header>
       <div class="chat-header d-flex align-center ps-6">
-        <div class="profile-initials rounded-circle d-flex align-center justify-center">
-          <h4 class="user-initials">{{ userInitials(userStore.userDetails.fname + " " + userStore.userDetails.lname) }}
-          </h4>
+        <div class="d-flex justify-space-between w-100">
+
+
+          <div class="d-flex align-center">
+            <div class="profile-initials rounded-circle d-flex align-center justify-center">
+              <h4 class="user-initials">{{ userInitials(userStore.userDetails.fname + " " +
+                userStore.userDetails.lname)
+              }}
+              </h4>
+            </div>
+            <div class="ps-4 text-h6 font-weight-bold user-name ">{{ userStore.userDetails.fname }}
+              {{ userStore.userDetails.lname }}</div>
+          </div>
+
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-icon icon="mdi-dots-vertical" class="mt-2" v-bind="props" start></v-icon>
+            </template>
+
+            <v-card>
+              <v-card-text class="pa-0 d-flex flex-column">
+                <v-btn color="#361d32" size="large" variant="text" @click="clickMe">
+                  <v-icon icon="mdi-account" start></v-icon>
+                  View profile
+                </v-btn>
+                <v-btn color="#361d32" size="large" variant="text" @click="clickMe">
+                  <v-icon icon="mdi-logout" start></v-icon>
+                  Log out
+                </v-btn>
+              </v-card-text>
+            </v-card>
+          </v-menu>
         </div>
-        <div class="ps-4 text-h6 font-weight-bold user-name">{{ userStore.userDetails.fname }}
-          {{ userStore.userDetails.lname }}</div>
       </div>
     </header>
     <div class="user-list d-flex justify-center flex-column ">
@@ -113,7 +140,9 @@ function setChatId(uid: string) {
   cursor: pointer;
 }
 
-@media screen and (max-width: 780px) {
+
+@media screen and (max-width: 1320px) {
+
   .user-name {
     font-size: 16px !important;
   }
@@ -130,6 +159,12 @@ function setChatId(uid: string) {
   .user-initials {
     font-size: 12px;
     font-weight: bold !important;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  button.v-btn {
+    margin-left: 10vw;
   }
 }
 

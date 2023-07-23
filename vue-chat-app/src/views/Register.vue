@@ -93,6 +93,7 @@ async function addDataToFirebase(userData: object) {
             ...userData
         });
         localStorage.setItem('isLoggedIn', 'true')
+        localStorage.setItem('chatId', auth.currentUser.uid)
         router.push("/")
         console.log(auth)
     }
