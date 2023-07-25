@@ -57,7 +57,8 @@ function onSubmit() {
             const user = userCredential.user;
             console.log("Successfull")
             console.log(user)
-            localStorage.setItem('isLoggedIn', true)
+            localStorage.setItem('isLoggedIn', true);
+            localStorage.setItem('chatId', auth.currentUser.uid)
             router.push('/')
         })
         .catch((error) => {
@@ -115,7 +116,7 @@ function onSubmit() {
         margin: -30px;
         justify-content: center;
         align-items: start !important;
-        height: 100%;
+        height: 150%;
     }
 
     .login-form {

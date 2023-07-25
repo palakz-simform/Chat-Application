@@ -6,27 +6,39 @@ import type user from '../types/user'
 
 export const useUserStore = defineStore('user', () => {
 let chatId = localStorage.getItem('chatId');
-
+const chatList = ref([])
 const sendChatList = ref([])
 const userDetails = ref({})
   async function getUserDetails(): Promise<void> {
+    
+    console.log('her.2e')
     onSnapshot(doc(db, "users", auth.currentUser!.uid), (doc) => {
       userDetails.value = {
         ...(doc.data() as user)
       };
       sendChatList.value=[]
-              userDetails.value.chats.forEach((chat)=>{
-          if(chat.uid==chatId){
-            sendChatList.value.push(chat)
-          }
-        })
+      userDetails.value.chats.forEach((chat)=>{
+      if(chat.uid==localStorage.getItem('chatId')){
+        sendChatList.value.push(chat)
+      }
+
+      })
+      chatList.value =[]
+      console.log(sendChatList.value,'*****',receiveChatList.value)
+      if(auth.currentUser!.uid!=localStorage.getItem('chatId')){
+        chatList.value = sendChatList.value.concat(receiveChatList.value);
+      }else{
+        chatList.value = sendChatList.value
+      }
+      chatList.value.sort((a, b) => a.date.seconds - b.date.seconds);
     });
   }
-
+ 
   const chatDetails = ref({})
   const receiveChatList = ref([])
-  async function getUserChat(uid){
-      onSnapshot(doc(db, "users", uid), (doc) => {
+  async function getUserChat(){
+    console.log('here')
+      onSnapshot(doc(db, "users", localStorage.getItem('chatId')), (doc) => {
       chatDetails.value = {
           ...(doc.data() as user)
         }
@@ -35,18 +47,24 @@ const userDetails = ref({})
         if(chat.uid==auth.currentUser!.uid){
           receiveChatList.value.push(chat)
         }
-        console.log(receiveChatList.value)
       })
-    
+      chatList.value =[]
+      console.log(sendChatList.value,'*****',receiveChatList.value)
+      if(auth.currentUser!.uid!=localStorage.getItem('chatId')){
+        chatList.value = sendChatList.value.concat(receiveChatList.value);
+      }else{
+        chatList.value = sendChatList.value
+      }
+      chatList.value.sort((a, b) => a.date.seconds - b.date.seconds);
+     
      });
   }
-  const chatList = ref([])
-  watchEffect(() => {
-    console.log(sendChatList.value,"********",receiveChatList.value)
-    chatList.value = sendChatList.value.concat(receiveChatList.value);
-    chatList.value.sort((a, b) => a.date.seconds - b.date.seconds);
-  });
-  getUserChat(chatId); // You can pass any UID here based on your use case
+  // watchEffect(() => {
+  // });
+  if(localStorage.getItem('ref')){
+    console.log("here Palak")
+    getUserChat()
+  }
 
   return { userDetails,getUserDetails,getUserChat,chatId,chatDetails,chatList }
 })

@@ -3,18 +3,23 @@
         <header>
             <div class="chat-header d-flex align-center ps-6">
                 <div class="profile-initials rounded-circle d-flex align-center justify-center">
-                    <h4 class="user-initials">{{ userInitials(userStore.chatDetails.fname + ' ' +
-                        userStore.chatDetails.lname) }}</h4>
+                    <h4 class="user-initials">
+                        {{
+                            userStore.chatDetails.fname
+                            ? userInitials(`${userStore.chatDetails.fname} ${userStore.chatDetails.lname}`)
+                            : userInitials(`${userStore.userDetails.fname} ${userStore.userDetails.lname}`)
+                        }}
+                    </h4>
                 </div>
                 <div class="ps-4 text-h6 font-weight-bold user-name">{{ userStore.chatList.uid }} {{
-                    userStore.chatDetails.fname
+                    userStore.chatDetails.fname ? userStore.chatDetails.fname : userStore.userDetails.fname
                 }} {{
-    userStore.chatDetails.lname }}</div>
+    userStore.chatDetails.lname ? userStore.chatDetails.lname : userStore.userDetails.lname }}</div>
             </div>
         </header>
         <div class="d-flex user-chat flex-column align-center" ref="chatWindow">
             <div class="user-chat-content mt-10 rounded-lg pb-16 ps-5 pe-5" ref="chatContentRef">
-                <div class="mt-4 mx-8 chats-comman " v-for="chat in userStore.chatList" :key="userStore.chatList.uid">
+                <div class="mt-4 mx-8 chats-comman " v-for="chat in userStore.chatList">
                     <div v-if="chat.uid == auth.currentUser.uid" class="d-flex  justify-end align-end">
                         <div class=" ms-16 pe-5 ps-5 py-2 chat-block-sender rounded-lg">{{ chat.content }}</div>
                         <div class="send-icon"></div>
@@ -40,7 +45,7 @@ import { ref, onBeforeMount, watchEffect, nextTick } from 'vue'
 import { useUserStore } from '../stores/userStore'
 import { useFormattedName } from '../composables/useFormattedName';
 import { auth, db } from '../includes/firebase';
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, arrayUnion } from "firebase/firestore";
 import type chats from '../types/chats'
 
 const { userInitials } = useFormattedName();
@@ -48,15 +53,16 @@ const chatContentRef = ref(null);
 const chatWindow = ref(null);
 
 const userStore = useUserStore()
+
 onBeforeMount(async () => {
-    await userStore.getUserChat(localStorage.getItem("chatId"))
     nextTick(() => {
         scrollToBottom(chatContentRef.value);
     });
+
 })
+
 function scrollToBottom(element) {
     if (element) {
-        console.log("here")
         element.scrollTop = element.scrollHeight;
     }
 }
@@ -66,28 +72,32 @@ let chatsReceiver: chats[]
 
 
 async function sendMessage() {
-    chatsReceiver = []
-    if (userStore.chatDetails.chats) {
-        chatsReceiver = userStore.chatDetails.chats;
-    }
+    // chatsReceiver = []
+    // if (userStore.chatDetails.chats) {
+    //     chatsReceiver = userStore.chatDetails.chats;
+    // }
 
-    const newChat: chats = {
-        content: message.value,
-        date: new Date(),
-        uid: auth.currentUser!.uid
-    };
+    // const newChat: chats = {
+    //     content: message.value,
+    //     date: new Date(),
+    //     uid: auth.currentUser!.uid
+    // };
 
+    let id = localStorage.getItem('chatId')
+    const userDocRef = doc(db, "users", id);
+    console.log(message.value)
+    await updateDoc(userDocRef, {
+        chats: arrayUnion({
+            uid: auth.currentUser!.uid, // Sender's UID
+            content: message.value,
+            date: new Date(),
+        }),
+    });
     clearMessage()
-    chatsReceiver.push(newChat)
-    console.log(chatsReceiver)
-    const userRef: DocumentReference<DocumentData> = doc(db, "users", localStorage.getItem('chatId'));
-    await updateDoc(userRef, {
-        chats: chatsReceiver
-    })
+    console.log("New chat added to Firestore successfully!");
     nextTick(() => {
         scrollToBottom(chatContentRef.value);
     });
-
 }
 function clearMessage() {
     message.value = ''

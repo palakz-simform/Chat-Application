@@ -23,11 +23,11 @@
 
             <v-card>
               <v-card-text class="pa-0 d-flex flex-column">
-                <v-btn color="#361d32" size="large" variant="text" @click="clickMe">
+                <v-btn color="#361d32" size="large" variant="text" @click="">
                   <v-icon icon="mdi-account" start></v-icon>
                   View profile
                 </v-btn>
-                <v-btn color="#361d32" size="large" variant="text" @click="clickMe">
+                <v-btn color="#361d32" size="large" variant="text" @click="logOut">
                   <v-icon icon="mdi-logout" start></v-icon>
                   Log out
                 </v-btn>
@@ -63,10 +63,13 @@
 <script setup lang ='ts'>
 import { ref, onBeforeMount } from 'vue'
 import { collection, onSnapshot } from "firebase/firestore";
-import { db } from '../includes/firebase'
+import { db, auth } from '../includes/firebase'
 import { useFormattedName } from "../composables/useFormattedName";
 import type user from '../types/user'
 import { useUserStore } from '../stores/userStore'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const userStore = useUserStore()
 const loaded = ref(false)
@@ -102,11 +105,23 @@ function onClick() {
   }, 2000)
 }
 
-function setChatId(uid: string) {
+async function setChatId(uid: string) {
   localStorage.setItem("chatId", uid)
-  userStore.getUserChat(localStorage.getItem("chatId"))
+  localStorage.setItem('ref', 'true')
+  await userStore.getUserChat()
+  await userStore.getUserDetails()
 }
 
+async function logOut() {
+
+  await auth.signOut()
+  localStorage.removeItem("isLoggedIn")
+  localStorage.removeItem("chatId")
+  localStorage.removeItem('ref')
+  router.push("/login")
+  console.log("SDaasd")
+
+}
 </script>
 <style scoped>
 .people-list-wrapper {
